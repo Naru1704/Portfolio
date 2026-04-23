@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balkrishna Bane | Embedded & IoT Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #00e5ff;
+    --green: #00ff88;
+    --bg: #060608;
+    --surface: #0d0d12;
+    --surface2: #13131a;
+    --border: rgba(0,229,255,0.12);
+    --text: #c8d0e0;
+    --muted: #4a5168;
+  }
+
+  html { scroll-behavior: smooth; cursor: none; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--cyan);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, opacity 0.2s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(0,229,255,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.08s linear, width 0.2s, height 0.2s;
+  }
+  .cursor.hover { width: 6px; height: 6px; }
+  .cursor-ring.hover { width: 50px; height: 50px; border-color: var(--cyan); }
+
+  /* CANVAS BG */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.35;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; width: 100%;
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(6,6,8,0.9), transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 40px; }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: #e0e0e0;
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    position: relative;
+    transition: color 0.3s;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--cyan);
+    transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* SECTIONS */
+  section {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #home {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;     
+    justify-content: center; 
+    text-align: center;
+  }
+
+  .home-inner {
+    max-width: 900px;
+    width: 100%;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  .overline {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--cyan);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    width: 100%;
+    padding-left: 10%;
+    text-align: left;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .overline .blink {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 10px;
+    animation: blink 1.2s infinite;
+    vertical-align: middle;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  h1.name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 14vw, 11rem);
+    line-height: 0.9;
+    color: white;
+    letter-spacing: 0.02em;
+    position: relative;
+    display: inline-block;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+
+  h1.name::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 3px; top: 3px;
+    color: var(--cyan);
+    clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+    opacity: 0;
+    animation: glitch 6s 2s infinite;
+    transform: none;
+  }
+
+  @keyframes glitch {
+    0%,92%,100% { opacity: 0; transform: translate(0); }
+    93% { opacity: 0.7; transform: translate(-4px, 2px); clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); }
+    94% { opacity: 0; transform: translate(4px); }
+    95% { opacity: 0.5; transform: translate(-2px); clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); }
+    96% { opacity: 0; }
+  }
+
+  .typing-wrap {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--green);
+    margin-top: 16px;
+    height: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .typing-wrap .cursor-blink {
+    display: inline-block;
+    width: 2px; height: 1.2em;
+    background: var(--green);
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink 0.7s infinite;
+  }
+
+  .home-desc {
+    max-width: 500px;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #e0e0e0;
+    margin-top: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.8s forwards;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s 1s forwards;
+  }
+
+  .btn-primary, .btn-ghost {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: 2px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cyan);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+    z-index: -1;
+  }
+  .btn-ghost:hover { color: #000; border-color: var(--cyan); }
+  .btn-ghost:hover::before { transform: scaleX(1); }
+
+  /* SCROLL BUTTONS - VERTICAL */
+  .scroll-btn {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(19, 19, 26, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: var(--cyan);
+    font-size: 1.3rem;
+  }
+
+  .scroll-btn:hover {
+    background: var(--cyan);
+    color: #000;
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    transform: translateX(-50%) scale(1.05);
+  }
+
+  .scroll-down-btn { bottom: 30px; opacity: 0; animation: fadeUp 0.8s 1.5s forwards; }
+  .scroll-up-btn { bottom: 30px; opacity: 0; animation: fadeUp 0.8s 1.5s forwards; visibility: hidden; transform: translateX(-50%) translateY(20px); }
+  .scroll-up-btn.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+
+  /* PROJECT HORIZONTAL SCROLL ARROWS (matching style) */
+  .project-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(19, 19, 26, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: var(--cyan);
+    font-size: 1.3rem;
+  }
+
+  .project-scroll-btn:hover {
+    background: var(--cyan);
+    color: #000;
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  .project-scroll-left { left: 20px; }
+  .project-scroll-right { right: 20px; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(20px); }
+  }
+
+  /* PROJECT SECTION */
+  .project-section {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .project-grid {
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 20px 40px;
+    margin: 0 auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cyan) var(--surface2);
+  }
+
+  .project-grid::-webkit-scrollbar { height: 4px; }
+  .project-grid::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
+  .project-grid::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
+
+  .project-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 36px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.4s;
+    cursor: none;
+    min-width: 340px;
+    flex-shrink: 0;
+    width: 340px;
+  }
+
+  @media (max-width: 768px) {
+    .project-card { min-width: 280px; width: 280px; padding: 28px 24px; }
+    .project-scroll-btn { width: 42px; height: 42px; font-size: 1.1rem; }
+    .project-scroll-left { left: 12px; }
+    .project-scroll-right { right: 12px; }
+    .nav-links { gap: 24px; }
+    .about-inner, .contact-inner { grid-template-columns: 1fr; gap: 40px; }
+    .about-strip, .skills-row { padding: 60px 24px; }
+    #home, #projects, #contact { padding: 80px 24px; }
+    footer { padding: 30px 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(to right, var(--cyan), var(--green));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+
+  .project-card:hover { border-color: rgba(0,229,255,0.3); }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+  }
+
+  .card-icon {
+    width: 40px; height: 40px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--cyan);
+    margin-bottom: 20px;
+    transition: border-color 0.3s, background 0.3s;
+    border-radius: 2px;
+  }
+
+  .project-card:hover .card-icon {
+    border-color: rgba(0,229,255,0.5);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .card-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: white;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .card-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    padding: 4px 10px;
+    border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 1px;
+  }
+
+  /* ABOUT & SKILLS */
+  .about-strip {
+    position: relative;
+    z-index: 2;
+    padding: 80px 48px;
+    display: flex;
+    justify-content: center;
+  }
+  .about-inner {
+    max-width: 900px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .about-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cyan);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .about-text {
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: #e0e0e0;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .stat-box {
+    background: var(--surface2);
+    padding: 28px 24px;
+    border: 1px solid var(--border);
+    transition: border-color 0.3s;
+  }
+  .stat-box:hover { border-color: rgba(0,229,255,0.35); }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.8rem;
+    color: white;
+    line-height: 1;
+  }
+  .stat-num span { color: var(--cyan); }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: #e0e0e0;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .skills-row {
+    position: relative;
+    z-index: 2;
+    padding: 0 48px 80px;
+    display: flex;
+    justify-content: center;
+  }
+  .skills-inner {
+    max-width: 900px;
+    width: 100%;
+  }
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .skill-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 2px;
+    background: rgba(0,229,255,0.03);
+    transition: all 0.3s;
+  }
+  .skill-tag:hover {
+    background: rgba(0,229,255,0.1);
+    border-color: rgba(0,229,255,0.4);
+    transform: translateY(-2px);
+  }
+
+  #projects {
+    flex-direction: column;
+    padding: 80px 48px;
+    background: var(--surface);
+  }
+  .section-header {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 48px;
+    padding: 0 20px;
+  }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cyan);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h2.section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: white;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+  }
+
+  /* CONTACT */
+  #contact {
+    flex-direction: column;
+    padding: 80px 48px;
+  }
+  .contact-inner {
+    max-width: 900px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .contact-cta {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: white;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-top: 16px;
+  }
+  .contact-cta span { color: var(--cyan); }
+  .contact-sub {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    line-height: 1.8;
+    margin-top: 20px;
+  }
+  .contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .contact-link {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-link::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 2px; height: 100%;
+    background: var(--cyan);
+    transform: scaleY(0);
+    transition: transform 0.3s;
+  }
+  .contact-link:hover { border-color: rgba(0,229,255,0.3); color: white; }
+  .contact-link:hover::before { transform: scaleY(1); }
+  .contact-link i {
+    width: 20px;
+    text-align: center;
+    color: var(--cyan);
+    font-size: 1rem;
+  }
+  .link-label { font-size: 0.9rem; flex: 1; }
+  .link-arrow { color: #e0e0e0; font-size: 0.75rem; transition: transform 0.3s, color 0.3s; }
+  .contact-link:hover .link-arrow { transform: translateX(4px); color: var(--cyan); }
+
+  footer {
+    position: relative;
+    z-index: 2;
+    padding: 40px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer span {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: white;
+    letter-spacing: 0.1em;
+  }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(to right, transparent, var(--cyan), transparent);
+    opacity: 0.15;
+    animation: scanline 8s linear infinite;
+    z-index: 200;
+    pointer-events: none;
+  }
+  @keyframes scanline { from { top: -2px; } to { top: 100%; } }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <a href="#home" class="nav-logo">BB</a>
+  <div class="nav-links">
+    <a href="#home">Home</a>
+    <a href="#projects">Projects</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<section id="home">
+  <div class="home-inner">
+    <div class="overline"><span class="blink"></span>Available for opportunities</div>
+    <h1 class="name" data-text="Balkrishna">Balkrishna</h1>
+    <div class="typing-wrap"><span id="typing"></span><span class="cursor-blink"></span></div>
+    <p class="home-desc">Building intelligent embedded systems and IoT solutions at the intersection of hardware and software.</p>
+    <div class="btn-row">
+      <a href="#projects" class="btn-ghost">View Projects</a>
+      <a href="#contact" class="btn-ghost">Get in Touch</a>
+    </div>
+  </div>
+</section>
+
+<div class="about-strip">
+  <div class="about-inner">
+    <div class="reveal">
+      <div class="about-label">// About</div>
+      <p class="about-text">I'm an embedded & IoT engineer passionate about bridging the physical and digital worlds. From low-level firmware to connected devices, I craft systems that are precise, efficient, and purposeful.</p>
+    </div>
+    <div class="stats-grid reveal" style="transition-delay: 0.15s">
+      <div class="stat-box"><div class="stat-num">8<span>+</span></div><div class="stat-label">Projects Built</div></div>
+      <div class="stat-box"><div class="stat-num">2<span>+</span></div><div class="stat-label">Years XP</div></div>
+      <div class="stat-box"><div class="stat-num">∞</div><div class="stat-label">Curiosity</div></div>
+      <div class="stat-box"><div class="stat-num">01<span>.</span></div><div class="stat-label">Always Learning</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="skills-row">
+  <div class="skills-inner reveal">
+    <div class="about-label">// Tech Stack</div>
+    <div class="skills-list">
+      <span class="skill-tag">C / C++</span><span class="skill-tag">Embedded C</span>
+      <span class="skill-tag">Arduino / ESP32 / STM32 / 8051 / PIC / LPC1768</span>
+      <span class="skill-tag">Raspberry Pi</span><span class="skill-tag">AWS / MQTT</span>
+      <span class="skill-tag">I2C / SPI / UART / I2S</span><span class="skill-tag">RS232</span>
+      <span class="skill-tag">Wi-Fi / Classic Bluetooth / BLE</span>
+      <span class="skill-tag">KiCad / Autodesk Eagle / EasyEDA</span>
+      <span class="skill-tag">Schematic Design / PCB Design / RF-PCB Design / DRC Check</span>
+      <span class="skill-tag">Python</span><span class="skill-tag">Flutter</span>
+    </div>
+  </div>
+</div>
+
+<section id="projects">
+  <div class="section-header reveal">
+    <div><div class="section-label">// Work</div><h2 class="section-title">Projects</h2></div>
+  </div>
+  <div class="project-section">
+    <div class="project-grid" id="projectGrid">
+      <!-- Original 4 projects -->
+      <div class="project-card reveal"><div class="card-num">01 / 08</div><div class="card-icon"><i class="fas fa-heartbeat"></i></div><div class="card-title">SPO2 Monitor</div><div class="card-desc">Biomedical embedded system using PPG to measure blood oxygen levels in real-time with high accuracy.</div><div class="card-tags"><span class="card-tag">Biomedical</span><span class="card-tag">PPG</span><span class="card-tag">Embedded</span></div></div>
+      <div class="project-card reveal"><div class="card-num">02 / 08</div><div class="card-icon"><i class="fab fa-telegram"></i></div><div class="card-title">Telegram Alarm</div><div class="card-desc">IoT-based remote alert system that sends instant notifications via Telegram when sensors detect anomalies.</div><div class="card-tags"><span class="card-tag">IoT</span><span class="card-tag">Telegram API</span><span class="card-tag">ESP32</span></div></div>
+      <div class="project-card reveal"><div class="card-num">03 / 08</div><div class="card-icon"><i class="fas fa-clock"></i></div><div class="card-title">LED Matrix Clock</div><div class="card-desc">Real-time display system using LED matrix arrays with custom scrolling and rendering algorithms.</div><div class="card-tags"><span class="card-tag">LED Matrix</span><span class="card-tag">RTC</span><span class="card-tag">Display</span></div></div>
+      <div class="project-card reveal"><div class="card-num">04 / 08</div><div class="card-icon"><i class="fas fa-microchip"></i></div><div class="card-title">Binary Watch</div><div class="card-desc">Wearable embedded prototype that displays time in binary using LEDs — minimalist timepiece.</div><div class="card-tags"><span class="card-tag">Wearable</span><span class="card-tag">Binary</span><span class="card-tag">Prototype</span></div></div>
+      
+      <!-- 4 new DIY projects -->
+      <div class="project-card reveal"><div class="card-num">05 / 08</div><div class="card-icon"><i class="fas fa-music"></i></div><div class="card-title">DIY Bluetooth Music Player</div><div class="card-desc">ESP32-based wireless audio streaming system with I2S integration, supporting high-quality Bluetooth A2DP profile.</div><div class="card-tags"><span class="card-tag">ESP32</span><span class="card-tag">Bluetooth</span><span class="card-tag">I2S</span><span class="card-tag">Audio</span></div></div>
+      <div class="project-card reveal"><div class="card-num">06 / 08</div><div class="card-icon"><i class="fas fa-volume-up"></i></div><div class="card-title">DIY Mono Channel Amplifier</div><div class="card-desc">High-efficiency Class-D audio amplifier using LM1875 / TPA3116 delivering clean 15W output for portable speakers.</div><div class="card-tags"><span class="card-tag">Power Amp</span><span class="card-tag">Audio Electronics</span><span class="card-tag">PCB Design</span></div></div>
+      <div class="project-card reveal"><div class="card-num">07 / 08</div><div class="card-icon"><i class="fas fa-bolt"></i></div><div class="card-title">DIY 5V to 3.3V Converter</div><div class="card-desc">Ultra-low dropout voltage regulator module using AMS1117 & passive components for logic level conversion in embedded systems.</div><div class="card-tags"><span class="card-tag">Power Supply</span><span class="card-tag">Voltage Regulation</span><span class="card-tag">DIY PCB</span></div></div>
+      <div class="project-card reveal"><div class="card-num">08 / 08</div><div class="card-icon"><i class="fas fa-car-battery"></i></div><div class="card-title">DIY Battery Management System</div><div class="card-desc">Protection & balancing circuit for 3S Li-ion packs featuring overcharge, over-discharge, and short-circuit protection.</div><div class="card-tags"><span class="card-tag">BMS</span><span class="card-tag">Li-ion</span><span class="card-tag">Protection Circuit</span><span class="card-tag">Power Electronics</span></div></div>
+    </div>
+    <!-- Horizontal scroll arrows matching vertical style -->
+    <div class="project-scroll-btn project-scroll-left" id="projectScrollLeft"><i class="fas fa-chevron-left"></i></div>
+    <div class="project-scroll-btn project-scroll-right" id="projectScrollRight"><i class="fas fa-chevron-right"></i></div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="contact-inner">
+    <div class="reveal"><div class="section-label">// Contact</div><div class="contact-cta">Let's Build<br>Something<br><span>Real.</span></div><p class="contact-sub">Open to embedded systems roles, IoT projects, and interesting hardware challenges.</p></div>
+    <div class="contact-links reveal" style="transition-delay: 0.15s">
+      <a href="https://github.com/Naru1704" class="contact-link"><i class="fab fa-github"></i><span class="link-label">GitHub</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a>
+      <a href="https://www.linkedin.com/in/balkrishna-bane-771179194" class="contact-link"><i class="fab fa-linkedin"></i><span class="link-label">LinkedIn</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a>
+      <a href="mailto:banenaru1099@gmail.com" class="contact-link"><i class="fas fa-envelope"></i><span class="link-label">banenaru1099@gmail.com</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a>
+      <a href="https://wa.me/919768745520" class="contact-link"><i class="fab fa-whatsapp"></i><span class="link-label">WhatsApp</span><span class="link-arrow"><i class="fas fa-arrow-right"></i></span></a>
+    </div>
+  </div>
+</section>
+
+<footer><span>© 2025 Balkrishna Bane — Embedded & IoT Engineer</span><span>Ghatkopar, Maharashtra, IN</span></footer>
+
+<div class="scroll-btn scroll-down-btn" id="scrollDownBtn"><i class="fas fa-angle-down"></i></div>
+<div class="scroll-btn scroll-up-btn" id="scrollUpBtn"><i class="fas fa-angle-up"></i></div>
+
+<script>
+// cursor logic
+const cursor = document.getElementById('cursor'), ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animCursor() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+document.querySelectorAll('a, button, .project-card, .skill-tag, .scroll-btn, .project-scroll-btn').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover'); });
+});
+
+// canvas particles
+const canvas = document.getElementById('bg-canvas'), ctx = canvas.getContext('2d');
+let W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+const DOTS = 80;
+const dots = Array.from({length: DOTS}, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, r: Math.random() * 1.5 + 0.5 }));
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+  dots.forEach(d => { d.x += d.vx; d.y += d.vy; if (d.x < 0) d.x = W; if (d.x > W) d.x = 0; if (d.y < 0) d.y = H; if (d.y > H) d.y = 0; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fillStyle = 'rgba(0,229,255,0.6)'; ctx.fill(); });
+  dots.forEach((a, i) => { for (let j = i + 1; j < DOTS; j++) { const b = dots[j]; const dist = Math.hypot(a.x - b.x, a.y - b.y); if (dist < 120) { ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.strokeStyle = `rgba(0,229,255,${0.15 * (1 - dist / 120)})`; ctx.lineWidth = 0.5; ctx.stroke(); } } });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// typing
+const roles = ["R&D Engineer.", "PCB Designer.", "Embedded & Hardware Product Engineer.", "IoT Product Developer."];
+let ri = 0, ci = 0, del = false;
+const typEl = document.getElementById('typing');
+function type() {
+  const cur = roles[ri];
+  typEl.textContent = del ? cur.substring(0, ci--) : cur.substring(0, ci++);
+  if (!del && ci === cur.length) { setTimeout(() => del = true, 1400); }
+  else if (del && ci === 0) { del = false; ri = (ri + 1) % roles.length; }
+  setTimeout(type, del ? 45 : 90);
+}
+type();
+
+// reveal observer
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }); }, { threshold: 0.15 });
+reveals.forEach(r => obs.observe(r));
+
+// vertical scroll buttons
+const scrollDownBtn = document.getElementById('scrollDownBtn'), scrollUpBtn = document.getElementById('scrollUpBtn');
+function scrollToBottom() { window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }); }
+function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+if (scrollDownBtn) scrollDownBtn.addEventListener('click', scrollToBottom);
+if (scrollUpBtn) scrollUpBtn.addEventListener('click', scrollToTop);
+
+window.addEventListener('scroll', function () {
+  const scrollTop = window.scrollY, windowHeight = window.innerHeight, docHeight = document.documentElement.scrollHeight;
+  if (scrollTop > 450) scrollUpBtn.classList.add('show'); else scrollUpBtn.classList.remove('show');
+  if (scrollTop + windowHeight >= docHeight - 5) { scrollDownBtn.style.opacity = "0"; scrollDownBtn.style.pointerEvents = "none"; }
+  else { scrollDownBtn.style.opacity = "1"; scrollDownBtn.style.pointerEvents = "auto"; }
+});
+scrollUpBtn.classList.remove('show');
+
+// Horizontal project scroll with arrows (matching style to vertical)
+const projectGrid = document.getElementById('projectGrid');
+const scrollLeftBtn = document.getElementById('projectScrollLeft');
+const scrollRightBtn = document.getElementById('projectScrollRight');
+
+function scrollProjects(direction) {
+  if (!projectGrid) return;
+  const card = projectGrid.querySelector('.project-card');
+  if (!card) return;
+  const cardWidth = card.offsetWidth;
+  const gap = 24;
+  const scrollAmount = cardWidth + gap;
+  if (direction === 'right') projectGrid.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  else projectGrid.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+}
+
+if (scrollRightBtn) scrollRightBtn.addEventListener('click', () => scrollProjects('right'));
+if (scrollLeftBtn) scrollLeftBtn.addEventListener('click', () => scrollProjects('left'));
+
+function updateProjectArrows() {
+  if (!projectGrid || !scrollLeftBtn || !scrollRightBtn) return;
+  const maxScroll = projectGrid.scrollWidth - projectGrid.clientWidth;
+  const curScroll = projectGrid.scrollLeft;
+  scrollLeftBtn.style.opacity = curScroll <= 5 ? '0.5' : '1';
+  scrollLeftBtn.style.pointerEvents = curScroll <= 5 ? 'none' : 'auto';
+  scrollRightBtn.style.opacity = curScroll >= maxScroll - 5 ? '0.5' : '1';
+  scrollRightBtn.style.pointerEvents = curScroll >= maxScroll - 5 ? 'none' : 'auto';
+}
+projectGrid.addEventListener('scroll', updateProjectArrows);
+window.addEventListener('resize', () => setTimeout(updateProjectArrows, 100));
+setTimeout(updateProjectArrows, 200);
+</script>
+</body>
+</html>
